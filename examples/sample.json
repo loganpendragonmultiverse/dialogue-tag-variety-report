@@ -1,3 +1,4 @@
 {
-    "text":  "\"Come in,\" Mara said softly. \"Not yet,\" Ivo asked. \"Please,\" Mara said."
+    "tags": ["said", "asked", "replied", "whispered", "shouted", "murmured", "cried"],
+    "text":  "# Arrival\n\"Come in,\" Mara said softly. \"Not yet,\" Ivo asked.\n# Decision\n\"Please,\" Mara said."
 }

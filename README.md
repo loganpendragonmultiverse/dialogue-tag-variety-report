@@ -12,7 +12,7 @@ dialogue-tags examples/sample.json
 dialogue-tags examples/sample.json --format json --output report.json
 ```
 
-The example documents the complete v1 input shape. Markdown is intended for immediate review; JSON preserves structured evidence for scripts and later comparison. An existing output file is never overwritten.
+The example documents the complete input shape. Supply an optional `tags` array to replace the seven-tag default catalog. Reports include tag totals, nearby adverbs, per-speaker counts, and counts grouped under Markdown headings. Markdown is intended for immediate review; JSON preserves structured evidence for scripts and later comparison. An existing output file is never overwritten.
 
 ## Privacy and platforms
 
@@ -22,7 +22,7 @@ Python 3.10 or newer is supported on Windows, macOS, and Linux. The package has 
 
 ## Interpretation boundary
 
-The parser recognizes common quoted-dialogue patterns. Counts are descriptive and will miss unconventional punctuation or tags separated from dialogue.
+The parser recognizes common quoted-dialogue patterns. Counts are descriptive—not style prescriptions—and will miss unconventional punctuation or tags separated from dialogue. Speaker detection is intentionally narrow; unmatched speakers are reported as `(unknown)`.
 
 ## Development
 
@@ -35,6 +35,6 @@ pytest
 python -m build
 ```
 
-The project is feature-complete for its documented v1 scope. Maintenance focuses on correctness, security, compatibility, and well-supported input improvements.
+Version 1.1 adds editable tag catalogs plus speaker and Markdown-section aggregation. Maintenance focuses on correctness, security, compatibility, and well-supported input improvements.
 
 Part of the [Logan Pendragon Forge open-source collection](https://www.loganpendragonforge.com/open-source/). Licensed under the [MIT License](LICENSE).
