@@ -33,7 +33,9 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "total": len(found),
         "tags": dict(Counter(item["tag"] for item in found)),
-        "adverbs": dict(Counter(item["adverb"].casefold() for item in found if item["adverb"])),
+        "adverbs": dict(
+            Counter(str(item["adverb"]).casefold() for item in found if item["adverb"])
+        ),
         "occurrences": found,
     }
 
