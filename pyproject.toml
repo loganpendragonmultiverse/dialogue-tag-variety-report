@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dialogue-tag-variety-report"
-version = "1.1.0"
+version = "1.2.0"
 description = "Count dialogue tags and nearby adverbs so writers can review repetition without prescribing style."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,3 +35,7 @@ omit = ["src/*/__main__.py"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=dialogue_tag_variety_report --cov-branch --cov-report=term-missing --cov-fail-under=90"
+
+[tool.setuptools.data-files]
+"share/doc/dialogue-tag-variety-report" = ["README.md", "CHANGELOG.md", "DEVELOPMENT.md", "TESTING.md"]
+"share/doc/dialogue-tag-variety-report/examples" = ["examples/sample.json", "examples/feature.json"]
