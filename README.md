@@ -38,3 +38,13 @@ python -m build
 Version 1.1 adds editable tag catalogs plus speaker and Markdown-section aggregation. Maintenance focuses on correctness, security, compatibility, and well-supported input improvements.
 
 Part of the [Logan Pendragon Forge open-source collection](https://www.loganpendragonforge.com/open-source/). Licensed under the [MIT License](LICENSE).
+
+## Version 1.2.0: tags before dialogue
+
+Set `include_pre_dialogue` to `true` to recognize forms such as `Mara said, “Hello.”` and `Mara asked: "Why?"`, including multiline quotes and custom multiword tags. In this mode every occurrence includes `position` (`pre` or `post`) and a half-open `tag_span` in the original text, counting Unicode characters. Matches sharing the same tag span count once. Results follow tag position in source order. The default post-quote parser and report fields remain unchanged. Speaker recognition still accepts one word; this is a punctuation heuristic, not character inference.
+
+Try the synthetic example:
+
+```bash
+dialogue-tags examples/feature.json --format json
+```

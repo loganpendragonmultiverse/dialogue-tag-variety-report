@@ -32,6 +32,9 @@ def _catalog(data: dict[str, Any]) -> list[str]:
 
 def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
     text = str(_require(data, "text"))
+    include_pre = data.get("include_pre_dialogue", False)
+    if not isinstance(include_pre, bool):
+        raise TypeError("include_pre_dialogue must be a boolean")
     tags = _catalog(data)
     tag_pattern = "|".join(re.escape(tag) for tag in sorted(tags, key=len, reverse=True))
     pattern = re.compile(
@@ -50,7 +53,22 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
         return next(name for start, name in reversed(headings) if start <= line)
 
     found: list[dict[str, Any]] = []
-    for match in pattern.finditer(text):
+    matches = [(match, "post") for match in pattern.finditer(text)]
+    if include_pre:
+        pre_pattern = re.compile(
+            rf"(?<!\w)(?P<speaker>[A-Z][\w-]*)\s+(?P<tag>{tag_pattern})(?!\w)"
+            r"(?:\s+(?P<adverb>[a-z]+ly))?\s*[,:]\s*"
+            r'(?P<dialogue>"[^"]*"|“[^”]*”)',
+            re.IGNORECASE | re.DOTALL,
+        )
+        matches.extend((match, "pre") for match in pre_pattern.finditer(text))
+        matches.sort(key=lambda item: item[0].start("tag"))
+    seen: set[tuple[int, int]] = set()
+    for match, position in matches:
+        tag_span = match.span("tag")
+        if tag_span in seen:
+            continue
+        seen.add(tag_span)
         line = text.count("\n", 0, match.start()) + 1
         found.append(
             {
@@ -62,6 +80,9 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
             }
         )
 
+        if include_pre:
+            found[-1]["position"] = position
+            found[-1]["tag_span"] = {"start": tag_span[0], "end": tag_span[1]}
     speaker_counts: dict[str, Counter[str]] = {}
     section_counts: dict[str, Counter[str]] = {}
     for item in found:
