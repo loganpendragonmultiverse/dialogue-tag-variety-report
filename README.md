@@ -57,4 +57,4 @@ Input must be a JSON object with a nonempty text string; custom catalog entries 
 
 Output files are created exclusively, rejecting existing files, dangling symbolic links and files created before creation. Inputs are never rewritten. This does not promise an atomic defense against replacement of an output leaf or parent directory by a hostile process.
 
-Custom tag matching retains the original trimmed spelling and Python Unicode case-insensitive regex semantics; catalog labels and reported tag keys remain case-folded. Multi-character case-fold expansions are not inferred as equivalent literal spellings. Duplicate normalized catalog labels retain the first supplied spelling for matching.
+Custom tag matching retains the original trimmed spelling and Python Unicode case-insensitive regex semantics; catalog labels and reported tag keys use the case-folded authored catalog entries. Multi-character case-fold expansions are not inferred as equivalent literal spellings. Normalized report labels deduplicate separately; every unique authored literal spelling remains available for matching, including explicitly supplied case-fold-equivalent aliases.

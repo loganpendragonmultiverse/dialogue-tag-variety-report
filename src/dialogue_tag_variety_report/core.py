@@ -31,6 +31,7 @@ def _catalog(data: dict[str, Any]) -> tuple[list[str], list[str]]:
             raise ValueError("tags must contain words, spaces, or hyphens")
         if tag.casefold() not in tags:
             tags.append(tag.casefold())
+        if tag not in literals:
             literals.append(tag)
     return tags, literals
 
@@ -45,7 +46,8 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(include_pre, bool):
         raise TypeError("include_pre_dialogue must be a boolean")
     tags, literals = _catalog(data)
-    tag_pattern = "|".join(re.escape(tag) for tag in sorted(literals, key=len, reverse=True))
+    ordered_literals = sorted(literals, key=len, reverse=True)
+    tag_pattern = "|".join(re.escape(tag) for tag in ordered_literals)
     quotes = list(re.finditer(r'"[^"]*"|“[^”]*”', text))
     post_pattern = re.compile(
         rf"[ \t]*,?[ \t]*(?:(?P<speaker>[^\W\d_][\w-]*)[ \t]+)?"
@@ -92,7 +94,11 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
         line = bisect_right(line_starts, occurrence_start)
         found.append(
             {
-                "tag": match.group("tag").casefold(),
+                "tag": next(
+                    literal.casefold()
+                    for literal in ordered_literals
+                    if re.fullmatch(re.escape(literal), match.group("tag"), re.IGNORECASE)
+                ),
                 "speaker": match.group("speaker"),
                 "adverb": match.group("adverb"),
                 "line": line,

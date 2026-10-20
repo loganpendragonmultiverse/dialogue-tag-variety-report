@@ -78,3 +78,20 @@ def test_unicode_custom_catalog_matches_original_literal_spelling(tag):
     for item in report["occurrences"]:
         span = item["tag_span"]
         assert text[span["start"] : span["end"]] == tag
+
+
+def test_casefold_equivalent_authored_aliases_are_all_matched():
+    text = "“One.” Éva Straße. Éva strasse, “Two.”"
+    report = analyze({"text": text, "tags": ["strasse", "straße"], "include_pre_dialogue": True})
+    assert report["catalog"] == ["strasse"]
+    assert report["tags"] == {"strasse": 2}
+    assert [item["position"] for item in report["occurrences"]] == ["post", "pre"]
+    for item in report["occurrences"]:
+        span = item["tag_span"]
+        assert text[span["start"] : span["end"]] in ["Straße", "strasse"]
+
+
+def test_unicode_case_matching_uses_authored_catalog_label():
+    report = analyze({"text": "“One.” Éva I.", "tags": ["İ"]})
+    assert report["catalog"] == ["i\u0307"]
+    assert report["tags"] == {"i\u0307": 1}
