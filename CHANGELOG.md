@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.1 - 2026-10-20
+
+- Preserve original Unicode custom-tag literals during matching while retaining normalized report labels.
+
+- Keep source occurrence and section coordinates consistent for Unicode line separators.
+
+- Match complete adverb words and Unicode letter-initial one-word speakers.
+
+- Check the output leaf for symbolic links before exclusive creation, including on Windows.
+
+- Match paired quotes and complete tags, preserve source line numbers for CR/LF/CRLF, reject malformed typed input cleanly, keep Markdown evidence fenced and create report files exclusively.
+
 ## 1.2.0 - 2026-10-16
 
 - Added tags before dialogue.

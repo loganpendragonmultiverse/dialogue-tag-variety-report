@@ -48,3 +48,13 @@ Try the synthetic example:
 ```bash
 dialogue-tags examples/feature.json --format json
 ```
+
+## Version 1.2.1 maintenance
+
+Tags and nearby adverbs match whole words; single-word speakers may start with a Unicode letter. Tags follow a complete, consistently paired straight or curly quote. Each quote pair is inspected independently; unrelated earlier quotes and tags in later paragraphs are not joined. Only horizontal spaces may separate a closing quote and its tag. This remains a narrow punctuation heuristic: escaped or nested quotation marks and multiword speaker names are outside its interpretation scope. Occurrence lines and sections use the same Python `splitlines` boundaries, including LF, CRLF, CR and Unicode line separators; tag spans keep original character coordinates.
+
+Input must be a JSON object with a nonempty text string; custom catalog entries must be strings and `include_pre_dialogue` must be a boolean. Malformed inputs produce an error and exit status 2. Markdown evidence uses a fence longer than any backticks in section names.
+
+Output files are created exclusively, rejecting existing files, dangling symbolic links and files created before creation. Inputs are never rewritten. This does not promise an atomic defense against replacement of an output leaf or parent directory by a hostile process.
+
+Custom tag matching retains the original trimmed spelling and Python Unicode case-insensitive regex semantics; catalog labels and reported tag keys use the case-folded authored catalog entries. Multi-character case-fold expansions are not inferred as equivalent literal spellings. Normalized report labels deduplicate separately; every unique authored literal spelling remains available for matching, including explicitly supplied case-fold-equivalent aliases.
