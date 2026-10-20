@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from bisect import bisect_right
 from collections import Counter
 from typing import Any
 
@@ -49,6 +50,9 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
         rf"(?P<tag>{tag_pattern})(?!\w)(?:[ \t]+(?P<adverb>[a-z]+ly)(?!\w))?",
         re.IGNORECASE,
     )
+    line_starts = [0]
+    for source_line in text.splitlines(keepends=True):
+        line_starts.append(line_starts[-1] + len(source_line))
     headings: list[tuple[int, str]] = [(1, "(document)")]
     for line_number, line_text in enumerate(text.splitlines(), start=1):
         heading = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$", line_text)
@@ -83,8 +87,7 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
         if tag_span in seen:
             continue
         seen.add(tag_span)
-        prefix = text[:occurrence_start]
-        line = len(prefix.splitlines()) + (1 if not prefix or prefix.endswith(("\n", "\r")) else 0)
+        line = bisect_right(line_starts, occurrence_start)
         found.append(
             {
                 "tag": match.group("tag").casefold(),

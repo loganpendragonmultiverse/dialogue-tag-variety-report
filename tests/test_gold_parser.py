@@ -14,7 +14,7 @@ def test_complete_tag_words_and_independent_quote_pairs():
     assert report["occurrences"][0]["line"] == 3
 
 
-@pytest.mark.parametrize("ending", ["\n", "\r\n", "\r"])
+@pytest.mark.parametrize("ending", ["\n", "\r\n", "\r", "\u2028", "\u0085", "\v"])
 def test_line_endings_and_no_distant_post_quote_tags(ending):
     text = '# Start\n"No tag."\n\nMara said.\n# Next\n"Here." Ivo asked.'.replace("\n", ending)
     report = analyze({"text": text})
