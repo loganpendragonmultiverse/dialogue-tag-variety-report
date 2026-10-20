@@ -22,7 +22,9 @@ def _catalog(data: dict[str, Any]) -> list[str]:
         raise ValueError("tags must be a non-empty list")
     tags: list[str] = []
     for raw_tag in raw_tags:
-        tag = str(raw_tag).strip().casefold()
+        if not isinstance(raw_tag, str):
+            raise TypeError("tags must contain strings")
+        tag = raw_tag.strip().casefold()
         if not tag or len(tag) > 80 or not re.fullmatch(r"[\w -]+", tag):
             raise ValueError("tags must contain words, spaces, or hyphens")
         if tag not in tags:
@@ -31,17 +33,21 @@ def _catalog(data: dict[str, Any]) -> list[str]:
 
 
 def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
-    text = str(_require(data, "text"))
+    if not isinstance(data, dict):
+        raise TypeError("input must be an object with a text string")
+    text = _require(data, "text")
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
     include_pre = data.get("include_pre_dialogue", False)
     if not isinstance(include_pre, bool):
         raise TypeError("include_pre_dialogue must be a boolean")
     tags = _catalog(data)
     tag_pattern = "|".join(re.escape(tag) for tag in sorted(tags, key=len, reverse=True))
-    pattern = re.compile(
-        rf'["\u201c].*?["\u201d]\s*,?\s*'
-        rf"(?:(?P<speaker>[A-Z][\w-]*)\s+)?(?P<tag>{tag_pattern})"
-        r"(?:\s+(?P<adverb>[a-z]+ly))?",
-        re.IGNORECASE | re.DOTALL,
+    quotes = list(re.finditer(r'"[^"]*"|“[^”]*”', text))
+    post_pattern = re.compile(
+        rf"[ \t]*,?[ \t]*(?:(?P<speaker>[A-Z][\w-]*)[ \t]+)?"
+        rf"(?P<tag>{tag_pattern})(?!\w)(?:[ \t]+(?P<adverb>[a-z]+ly))?",
+        re.IGNORECASE,
     )
     headings: list[tuple[int, str]] = [(1, "(document)")]
     for line_number, line_text in enumerate(text.splitlines(), start=1):
@@ -53,23 +59,32 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
         return next(name for start, name in reversed(headings) if start <= line)
 
     found: list[dict[str, Any]] = []
-    matches = [(match, "post") for match in pattern.finditer(text)]
+    matches = []
+    for quote in quotes:
+        post = post_pattern.match(text, quote.end())
+        if post is not None:
+            matches.append((post, "post", quote.start()))
     if include_pre:
         pre_pattern = re.compile(
-            rf"(?<!\w)(?P<speaker>[A-Z][\w-]*)\s+(?P<tag>{tag_pattern})(?!\w)"
-            r"(?:\s+(?P<adverb>[a-z]+ly))?\s*[,:]\s*"
-            r'(?P<dialogue>"[^"]*"|“[^”]*”)',
-            re.IGNORECASE | re.DOTALL,
+            rf"(?<!\w)(?P<speaker>[A-Z][\w-]*)[ \t]+(?P<tag>{tag_pattern})(?!\w)"
+            r"(?:[ \t]+(?P<adverb>[a-z]+ly))?[ \t]*[,:][ \t]*$",
+            re.IGNORECASE,
         )
-        matches.extend((match, "pre") for match in pre_pattern.finditer(text))
+        previous_end = 0
+        for quote in quotes:
+            pre = pre_pattern.search(text, previous_end, quote.start())
+            if pre is not None:
+                matches.append((pre, "pre", pre.start()))
+            previous_end = quote.end()
         matches.sort(key=lambda item: item[0].start("tag"))
     seen: set[tuple[int, int]] = set()
-    for match, position in matches:
+    for match, position, occurrence_start in matches:
         tag_span = match.span("tag")
         if tag_span in seen:
             continue
         seen.add(tag_span)
-        line = text.count("\n", 0, match.start()) + 1
+        prefix = text[:occurrence_start]
+        line = len(prefix.splitlines()) + (1 if not prefix or prefix.endswith(("\n", "\r")) else 0)
         found.append(
             {
                 "tag": match.group("tag").casefold(),
@@ -116,6 +131,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         if key not in {"version", "project"}:
             lines.append(f"## {key.replace('_', ' ').title()}")
             lines.append("")
-            lines.append(f"```json\n{json.dumps(value, indent=2, ensure_ascii=False)}\n```")
+            payload = json.dumps(value, indent=2, ensure_ascii=False)
+            fence = "`" * max(
+                3, max((len(run) for run in re.findall(r"`+", payload)), default=0) + 1
+            )
+            lines.append(f"{fence}json\n{payload}\n{fence}")
             lines.append("")
     return "\n".join(lines).rstrip() + "\n"

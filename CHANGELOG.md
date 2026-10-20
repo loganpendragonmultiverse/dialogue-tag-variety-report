@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 - 2026-10-20
+
+- Match paired quotes and complete tags, preserve source line numbers for CR/LF/CRLF, reject malformed typed input cleanly, keep Markdown evidence fenced and create report files exclusively.
+
 ## 1.2.0 - 2026-10-16
 
 - Added tags before dialogue.
