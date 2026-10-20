@@ -56,3 +56,5 @@ Tags and nearby adverbs match whole words; single-word speakers may start with a
 Input must be a JSON object with a nonempty text string; custom catalog entries must be strings and `include_pre_dialogue` must be a boolean. Malformed inputs produce an error and exit status 2. Markdown evidence uses a fence longer than any backticks in section names.
 
 Output files are created exclusively, rejecting existing files, dangling symbolic links and files created before creation. Inputs are never rewritten. This does not promise an atomic defense against replacement of an output leaf or parent directory by a hostile process.
+
+Custom tag matching retains the original trimmed spelling and Python Unicode case-insensitive regex semantics; catalog labels and reported tag keys remain case-folded. Multi-character case-fold expansions are not inferred as equivalent literal spellings. Duplicate normalized catalog labels retain the first supplied spelling for matching.

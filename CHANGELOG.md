@@ -2,6 +2,8 @@
 
 ## 1.2.1 - 2026-10-20
 
+- Preserve original Unicode custom-tag literals during matching while retaining normalized report labels.
+
 - Keep source occurrence and section coordinates consistent for Unicode line separators.
 
 - Match complete adverb words and Unicode letter-initial one-word speakers.

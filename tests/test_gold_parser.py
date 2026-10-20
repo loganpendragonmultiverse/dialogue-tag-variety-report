@@ -65,3 +65,16 @@ def test_unicode_letter_initial_speakers_keep_original_spans():
     for item in report["occurrences"]:
         span = item["tag_span"]
         assert text[span["start"] : span["end"]] == item["tag"]
+
+
+@pytest.mark.parametrize("tag", ["äußerte", "İ"])
+def test_unicode_custom_catalog_matches_original_literal_spelling(tag):
+    text = f"Éva {tag}, “Hello.”\n“Bye.” Éva {tag}."
+    report = analyze({"text": text, "tags": [tag], "include_pre_dialogue": True})
+    assert report["catalog"] == [tag.casefold()]
+    assert report["tags"] == {tag.casefold(): 2}
+    assert report["speakers"] == {"Éva": {tag.casefold(): 2}}
+    assert [item["position"] for item in report["occurrences"]] == ["pre", "post"]
+    for item in report["occurrences"]:
+        span = item["tag_span"]
+        assert text[span["start"] : span["end"]] == tag

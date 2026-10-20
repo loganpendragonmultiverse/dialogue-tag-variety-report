@@ -17,20 +17,22 @@ def _require(data: dict[str, Any], key: str) -> Any:
     return value
 
 
-def _catalog(data: dict[str, Any]) -> list[str]:
+def _catalog(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     raw_tags = data.get("tags", list(DEFAULT_TAGS))
     if not isinstance(raw_tags, list) or not raw_tags:
         raise ValueError("tags must be a non-empty list")
     tags: list[str] = []
+    literals: list[str] = []
     for raw_tag in raw_tags:
         if not isinstance(raw_tag, str):
             raise TypeError("tags must contain strings")
-        tag = raw_tag.strip().casefold()
+        tag = raw_tag.strip()
         if not tag or len(tag) > 80 or not re.fullmatch(r"[\w -]+", tag):
             raise ValueError("tags must contain words, spaces, or hyphens")
-        if tag not in tags:
-            tags.append(tag)
-    return tags
+        if tag.casefold() not in tags:
+            tags.append(tag.casefold())
+            literals.append(tag)
+    return tags, literals
 
 
 def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
@@ -42,8 +44,8 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
     include_pre = data.get("include_pre_dialogue", False)
     if not isinstance(include_pre, bool):
         raise TypeError("include_pre_dialogue must be a boolean")
-    tags = _catalog(data)
-    tag_pattern = "|".join(re.escape(tag) for tag in sorted(tags, key=len, reverse=True))
+    tags, literals = _catalog(data)
+    tag_pattern = "|".join(re.escape(tag) for tag in sorted(literals, key=len, reverse=True))
     quotes = list(re.finditer(r'"[^"]*"|“[^”]*”', text))
     post_pattern = re.compile(
         rf"[ \t]*,?[ \t]*(?:(?P<speaker>[^\W\d_][\w-]*)[ \t]+)?"
