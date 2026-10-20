@@ -27,8 +27,10 @@ def test_dangling_output_link_does_not_create_target(tmp_path, capsys):
     target = tmp_path / "untouched.json"
     try:
         output.symlink_to(target)
-    except (OSError, NotImplementedError) as exc:
-        pytest.skip(f"symlink creation unavailable on this platform: {exc}")
+    except OSError as exc:
+        if __import__("sys").platform == "win32" and getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows runner does not grant symbolic-link creation")
+        raise
     assert main([str(source), "--output", str(output)]) == 2
     assert output.is_symlink() and not target.exists()
     assert capsys.readouterr().out == ""

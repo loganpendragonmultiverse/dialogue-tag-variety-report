@@ -45,8 +45,8 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
     tag_pattern = "|".join(re.escape(tag) for tag in sorted(tags, key=len, reverse=True))
     quotes = list(re.finditer(r'"[^"]*"|“[^”]*”', text))
     post_pattern = re.compile(
-        rf"[ \t]*,?[ \t]*(?:(?P<speaker>[A-Z][\w-]*)[ \t]+)?"
-        rf"(?P<tag>{tag_pattern})(?!\w)(?:[ \t]+(?P<adverb>[a-z]+ly))?",
+        rf"[ \t]*,?[ \t]*(?:(?P<speaker>[^\W\d_][\w-]*)[ \t]+)?"
+        rf"(?P<tag>{tag_pattern})(?!\w)(?:[ \t]+(?P<adverb>[a-z]+ly)(?!\w))?",
         re.IGNORECASE,
     )
     headings: list[tuple[int, str]] = [(1, "(document)")]
@@ -66,8 +66,8 @@ def _dialogue(data: dict[str, Any]) -> dict[str, Any]:
             matches.append((post, "post", quote.start()))
     if include_pre:
         pre_pattern = re.compile(
-            rf"(?<!\w)(?P<speaker>[A-Z][\w-]*)[ \t]+(?P<tag>{tag_pattern})(?!\w)"
-            r"(?:[ \t]+(?P<adverb>[a-z]+ly))?[ \t]*[,:][ \t]*$",
+            rf"(?<!\w)(?P<speaker>[^\W\d_][\w-]*)[ \t]+(?P<tag>{tag_pattern})(?!\w)"
+            r"(?:[ \t]+(?P<adverb>[a-z]+ly)(?!\w))?[ \t]*[,:][ \t]*$",
             re.IGNORECASE,
         )
         previous_end = 0

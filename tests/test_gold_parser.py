@@ -49,3 +49,19 @@ def test_bad_typed_input_is_cli_error_without_output(tmp_path, capsys, bad):
 def test_markdown_fences_untrusted_section_names():
     report = analyze({"text": '# Scene```\n"Hello." Mara said.'})
     assert "````json" in render_markdown(report)
+
+
+def test_adverbs_match_complete_words_only():
+    result = analyze({"text": '"Hello." Mara said softlyness. "Again." Mara asked rapidly.'})
+    assert result["tags"] == {"said": 1, "asked": 1}
+    assert result["adverbs"] == {"rapidly": 1}
+
+
+def test_unicode_letter_initial_speakers_keep_original_spans():
+    text = "Éva said, “Hello.”\n“Bye.” Éva asked."
+    report = analyze({"text": text, "include_pre_dialogue": True})
+    assert report["speakers"] == {"Éva": {"said": 1, "asked": 1}}
+    assert [item["line"] for item in report["occurrences"]] == [1, 2]
+    for item in report["occurrences"]:
+        span = item["tag_span"]
+        assert text[span["start"] : span["end"]] == item["tag"]
